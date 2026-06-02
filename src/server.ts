@@ -72,3 +72,24 @@ app.post('/user', async (req: Request, res: Response) => {
         });
     }
 })
+
+app.get("/users" , async (req: Request, res: Response) => {
+    try {
+        const result = await pool.query(`
+            SELECT * FROM users
+            `);
+        res.status(200).json({
+            success: true,
+            message: "Users Retrieved successfully!",
+            users: result.rows,
+        });
+    } catch (error : any) {
+        console.error("Error fetching users: ", error);
+        res.status(500).json({ 
+            success: false,
+            message: error.message || "Internal Server Error",
+            error: error ,
+        });
+    }
+});
+
