@@ -152,3 +152,42 @@ app.delete("/users/:id", async (req: Request, res: Response) => {
         })
     }
 });
+
+app.put("/users/:id", async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { name, email, password, is_admin, is_active } = req.body;
+    try {
+        const result = await pool.query(`
+            UPDATE users
+            SET
+            name = COALESCE($1, name),
+            email = COALESCE($2, email),
+            password = COALESCE($3, password),
+            is_admin = COALESCE($4, is_admin),
+            is_active = COALESCE($5, is_active)
+            WHERE id = $6
+            RETURNING *
+        `, [name, email, password, is_admin, is_active, id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found!",
+                user: null
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User updated successfully!",
+            user: result.rows[0]
+        });
+    } catch (error : any) {
+        console.error("Error updating user: ", error);
+        res.status(500).json({
+            success: false,
+            message: error.message || "Internal Server Error",
+            error: error,
+        });
+    }
+});
