@@ -1,15 +1,10 @@
 import type { Request, Response } from "express";
-import { pool } from "../../db";
+import { userService } from "./user.service";
 
 
 const createUser = async (req: Request, res: Response) => {
-    const { name, email, password, is_admin, is_active} = req.body;
     try {
-        const result = await pool.query(`
-            INSERT INTO users (name, email, password, is_admin, is_active)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING *
-        `, [name, email, password, is_admin, is_active]);
+        const result = await userService.createUser(req.body);
         res.status(201).json({
             success: true,
             message: "User created successfully",
